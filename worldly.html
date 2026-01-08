@@ -114,6 +114,7 @@
             const [showResult, setShowResult] = useState(false);
             const [score, setScore] = useState(0);
             const [topScores, setTopScores] = useState([]);
+            const [usedFeatures, setUsedFeatures] = useState([]); // FIX #2: Track used features
 
             useEffect(() => {
                 loadTopScores();
@@ -153,15 +154,34 @@
                 const type = types[Math.floor(Math.random() * types.length)];
                 const features = FEATURES[type];
                 
-                const feature = features[Math.floor(Math.random() * features.length)];
+                // FIX #2: Filter out already used features
+                const availableFeatures = features.filter(f => 
+                    !usedFeatures.some(used => used.name === f.name)
+                );
                 
-                const otherFeatures = features.filter(f => f.name !== feature.name);
-                const wrongNames = shuffleArray(otherFeatures).slice(0, 3).map(f => f.name);
-                const allNames = shuffleArray([feature.name, ...wrongNames]);
+                // If we've used all features (shouldn't happen in 5 rounds), reset
+                if (availableFeatures.length === 0) {
+                    setUsedFeatures([]);
+                    return loadNewQuestion();
+                }
                 
-                const wrongRegions = REGIONS.filter(r => r !== feature.region);
-                const selectedWrongRegions = shuffleArray(wrongRegions).slice(0, 3);
-                const allRegions = shuffleArray([feature.region, ...selectedWrongRegions]);
+                const feature = availableFeatures[Math.floor(Math.random() * availableFeatures.length)];
+                
+                // FIX #3: Get wrong options from the same category so regions align better
+                const otherFeatures = availableFeatures.filter(f => f.name !== feature.name);
+                const wrongNames = shuffleArray(otherFeatures).slice(0, 3);
+                
+                // Collect all regions from the selected features (correct + wrong names)
+                const selectedFeatureRegions = [feature, ...wrongNames].map(f => f.region);
+                const uniqueRegions = [...new Set(selectedFeatureRegions)];
+                
+                // If we need more regions to reach 4, add some that aren't already included
+                const additionalRegions = REGIONS.filter(r => !uniqueRegions.includes(r));
+                const neededRegions = 4 - uniqueRegions.length;
+                const regionsToAdd = shuffleArray(additionalRegions).slice(0, neededRegions);
+                
+                const allRegions = shuffleArray([...uniqueRegions, ...regionsToAdd]);
+                const allNames = shuffleArray([feature.name, ...wrongNames.map(f => f.name)]);
                 
                 setCurrentFeature(feature);
                 setFeatureType(type);
@@ -170,6 +190,9 @@
                 setSelectedName(null);
                 setSelectedRegion(null);
                 setShowResult(false);
+                
+                // FIX #2: Track this feature as used
+                setUsedFeatures(prev => [...prev, feature]);
             };
 
             const handleSubmit = () => {
@@ -189,8 +212,8 @@
             const handleNext = () => {
                 if (currentRound >= 5) {
                     setGameState('finished');
-                    const finalScore = score + (selectedName === currentFeature.name ? 1 : 0) + (selectedRegion === currentFeature.region ? 1 : 0);
-                    saveTopScore(finalScore);
+                    // FIX #1: Use current score state, don't recalculate
+                    saveTopScore(score);
                 } else {
                     setCurrentRound(currentRound + 1);
                     loadNewQuestion();
@@ -201,12 +224,14 @@
                 setGameState('playing');
                 setCurrentRound(1);
                 setScore(0);
+                setUsedFeatures([]); // FIX #2: Reset used features
                 loadNewQuestion();
             };
 
             if (!currentFeature && gameState === 'playing') return null;
 
             if (gameState === 'finished') {
+                // FIX #1: Use the score state directly
                 const finalScore = score;
                 const isTopScore = topScores.length < 5 || finalScore > topScores[topScores.length - 1]?.score;
                 
@@ -322,7 +347,8 @@
 
                             <div className="mb-8">
                                 <h3 className="text-lg font-semibold text-gray-700 mb-3">What region is it in?</h3>
-                                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                {/* FIX #4: Force 2x2 grid on all screen sizes */}
+                                <div className="grid grid-cols-2 gap-3">
                                     {regionOptions.map((region, idx) => (
                                         <button
                                             key={idx}
