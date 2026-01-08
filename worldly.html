@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worldly - Geography Trivia Game</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const FEATURES = {
+            rivers: [
+                { name: "Amazon River", region: "South America", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/e/e6/Casaamazonica.jpg" },
+                { name: "Nile River", region: "Africa", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/4/41/Vallee_fertile_du_Nil_a_Louxor.jpg" },
+                { name: "Yangtze River", region: "Asia", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/5/58/Dusk_on_the_Yangtze_River.jpg" },
+                { name: "Mississippi River", region: "North America", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/d/d2/Efmo_View_from_Fire_Point.jpg" },
+                { name: "Ganges River", region: "Asia", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/b/b9/Varanasiganga.jpg" },
+                { name: "Danube River", region: "Europe", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/5/53/View_from_Gell%C3%A9rt_Hill_to_the_Danube%2C_Hungary_-_Budapest_%2828493220635%29.jpg" },
+                { name: "Mekong River", region: "Asia", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/1/18/Chamdo_Mekong.png" },
+                { name: "Congo River", region: "Africa", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/c/cb/Aerial_view_of_the_Congo_River_near_Kisangani.jpg" },
+                { name: "Rhine River", region: "Europe", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/6/67/Middle_Bridge%2C_Basel%2C_Switzerland.JPG" },
+                { name: "Zambezi River", region: "Africa", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/b/be/Zambezi_River_at_junction_of_Namibia%2C_Zambia%2C_Zimbabwe_%26_Botswana.jpg" }
+            ],
+            mountains: [
+                { name: "Mount Everest", region: "Asia", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/1/15/Mt._Everest_from_Gokyo_Ri_November_5%2C_2012.jpg" },
+                { name: "Kilimanjaro", region: "Africa", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/6/6c/Kilimanjaro_from_Amboseli.jpg" },
+                { name: "Matterhorn", region: "Europe", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/6/60/Matterhorn_from_Domh%C3%BCtte_-_2.jpg" },
+                { name: "Denali", region: "North America", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/9/91/Wonder_Lake_and_Denali.jpg" },
+                { name: "Mount Fuji", region: "Asia", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/f/f8/View_of_Mount_Fuji_from_%C5%8Cwakudani_20211202.jpg" },
+                { name: "Andes Mountains", region: "South America", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/1/17/Cordillera_de_los_Andes.jpg" },
+                { name: "Alps", region: "Europe", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/b/ba/Alps_2007-03-13_10.10UTC_1px-250m.jpg" },
+                { name: "Himalayas", region: "Asia", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/4/4d/Panorama_of_Himalayas_from_Ranikhet%2C_Uttarakhand%2C_India.jpg" },
+                { name: "Rocky Mountains", region: "North America", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/c/c5/Moraine_Lake_17092005.jpg" },
+                { name: "Drakensberg", region: "Africa", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/2/22/South_Africa_-_Drakensberg_%2816261357780%29.jpg" }
+            ],
+            lakes: [
+                { name: "Lake Baikal", region: "Asia", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/6/6a/Baikal.A2001296.0420.250m-NASA.jpg" },
+                { name: "Lake Victoria", region: "Africa", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/7/74/ISS042-E-263206_-_View_of_Earth.jpg" },
+                { name: "Great Lakes", region: "North America", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/b/b3/Great_Lakes%2C_No_Clouds_%284968915002%29_Brighter.jpg" },
+                { name: "Lake Titicaca", region: "South America", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/7/73/Lake_Titicaca_ESA22522896.jpeg" },
+                { name: "Lake Geneva", region: "Europe", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/1/1b/Lake_Geneva_by_Sentinel-2.jpg" },
+                { name: "Caspian Sea", region: "Asia", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/9/98/Caspian_Sea_from_orbit.jpg" },
+                { name: "Lake Tanganyika", region: "Africa", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/4/46/STS51G-034-0012_Lake_Tanganyika_June1985.jpg" },
+                { name: "Lake Superior", region: "North America", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/9/9d/Lake_Superior_North_Shore.jpg" },
+                { name: "Lake Malawi", region: "Africa", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/0/05/Lake_Malawi_seen_from_orbit.jpg" },
+                { name: "Dead Sea", region: "Asia", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/6/6f/Dead_Sea_beach_00.JPG" }
+            ],
+            deserts: [
+                { name: "Sahara Desert", region: "Africa", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/2/29/Village_Telly_in_Mali.jpg" },
+                { name: "Arabian Desert", region: "Asia", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/8/8e/Arabian_Desert_-_panoramio.jpg" },
+                { name: "Gobi Desert", region: "Asia", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/7/74/Bayanzag.jpg" },
+                { name: "Atacama Desert", region: "South America", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/6/64/Paisajes_cerca_de_Calama%2C_Chile%2C_2016-02-01%2C_DD_84_%28cropped%29.JPG" },
+                { name: "Mojave Desert", region: "North America", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/2/21/Joshua_Tree_NP_-_Joshua_Tree_2.jpg" },
+                { name: "Kalahari Desert", region: "Africa", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/1/1f/Kalahari_E02_00.jpg" },
+                { name: "Patagonian Desert", region: "South America", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/9/92/PatagoniaDinos.jpg" },
+                { name: "Great Victoria Desert", region: "Oceania", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/0/01/Serpentine_Lakes.JPG" },
+                { name: "Sonoran Desert", region: "North America", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/8/89/Saguaro_National_Park_-_Flickr_-_Joe_Parks.jpg" },
+                { name: "Namib Desert", region: "Africa", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/2/22/Sossusvlei.jpg" }
+            ],
+            plateaus: [
+                { name: "Tibetan Plateau", region: "Asia", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/d/d0/YangpachenValley.jpg" },
+                { name: "Colorado Plateau", region: "North America", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/3/39/Sunset_in_Ojito_Wilderness%2C_NM.jpg" },
+                { name: "Deccan Plateau", region: "Asia", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/c/c8/Western-Ghats-Matheran.jpg" },
+                { name: "Ethiopian Highlands", region: "Africa", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/f/f1/Ethiopian_Highlands_01.jpg" },
+                { name: "Altiplano", region: "South America", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/2/2d/SajamaPark.jpg" },
+                { name: "Columbia Plateau", region: "North America", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/5/55/Alkali_Lake_Washington.jpg" },
+                { name: "Massif Central", region: "Europe", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/f/f3/Chaine_des_Puys_France_2013.jpg" },
+                { name: "Kimberley Plateau", region: "Oceania", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/c/cf/.00_0848_Kimberley%2C_Western_Australia.jpg" },
+                { name: "Brazilian Highlands", region: "South America", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/9/9f/Pedra_da_Mina.jpg" },
+                { name: "Anatolian Plateau", region: "Asia", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/4/49/Anatolian_plateau_in_winter_from_air.jpg" }
+            ],
+            seas: [
+                { name: "Mediterranean Sea", region: "Europe", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/6/6c/Lopud_island%2C_Croatia_%2848612709613%29.jpg" },
+                { name: "Caribbean Sea", region: "North America", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/1/1e/Village_Gran_Roque.jpg" },
+                { name: "Red Sea", region: "Africa", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/8/88/Empty_Coast_in_Farasan_Island.jpg" },
+                { name: "Black Sea", region: "Europe", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/d/d2/Black_Sea_coast_of_Georgia_%28country%29%2C_with_skyline_of_Batumi_on_the_horizon.jpg" },
+                { name: "Coral Sea", region: "Oceania", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/0/03/Coral_Sea_2.jpg" },
+                { name: "Arabian Sea", region: "Asia", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/4/4c/Bandra_Sea_Link_aerial.jpg" },
+                { name: "Sea of Japan", region: "Asia", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/4/48/View_from_Ashinokura_Parking%2C_Oga_20200118a.jpg" },
+                { name: "Baltic Sea", region: "Europe", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/b/b4/Hel_in_summer.jpg" },
+                { name: "Andaman Sea", region: "Asia", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/3/32/Andaman_Sea%2C_Andaman_Islands.jpg" },
+                { name: "Tasman Sea", region: "Oceania", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/3/34/Tasman_Sea_from_Hokianga.jpg" }
+            ]
+        };
+
+        const REGIONS = ["Africa", "Asia", "Europe", "North America", "South America", "Oceania"];
+
+        const storage = {
+            get: (key) => {
+                const val = localStorage.getItem(key);
+                return val ? { value: val } : null;
+            },
+            set: (key, value) => {
+                localStorage.setItem(key, value);
+            }
+        };
+
+        const GeographyTrivia = () => {
+            const [gameState, setGameState] = useState('playing');
+            const [currentRound, setCurrentRound] = useState(1);
+            const [currentFeature, setCurrentFeature] = useState(null);
+            const [featureType, setFeatureType] = useState(null);
+            const [nameOptions, setNameOptions] = useState([]);
+            const [regionOptions, setRegionOptions] = useState([]);
+            const [selectedName, setSelectedName] = useState(null);
+            const [selectedRegion, setSelectedRegion] = useState(null);
+            const [showResult, setShowResult] = useState(false);
+            const [score, setScore] = useState(0);
+            const [topScores, setTopScores] = useState([]);
+
+            useEffect(() => {
+                loadTopScores();
+                loadNewQuestion();
+            }, []);
+
+            const loadTopScores = () => {
+                const result = storage.get('worldly-top-scores');
+                if (result) {
+                    setTopScores(JSON.parse(result.value));
+                }
+            };
+
+            const saveTopScore = (newScore) => {
+                const date = new Date().toLocaleDateString();
+                const scoreEntry = { score: newScore, date };
+                
+                let updatedScores = [...topScores, scoreEntry];
+                updatedScores.sort((a, b) => b.score - a.score);
+                updatedScores = updatedScores.slice(0, 5);
+                
+                storage.set('worldly-top-scores', JSON.stringify(updatedScores));
+                setTopScores(updatedScores);
+            };
+
+            const shuffleArray = (array) => {
+                const shuffled = [...array];
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+                return shuffled;
+            };
+
+            const loadNewQuestion = () => {
+                const types = Object.keys(FEATURES);
+                const type = types[Math.floor(Math.random() * types.length)];
+                const features = FEATURES[type];
+                
+                const feature = features[Math.floor(Math.random() * features.length)];
+                
+                const otherFeatures = features.filter(f => f.name !== feature.name);
+                const wrongNames = shuffleArray(otherFeatures).slice(0, 3).map(f => f.name);
+                const allNames = shuffleArray([feature.name, ...wrongNames]);
+                
+                const wrongRegions = REGIONS.filter(r => r !== feature.region);
+                const selectedWrongRegions = shuffleArray(wrongRegions).slice(0, 3);
+                const allRegions = shuffleArray([feature.region, ...selectedWrongRegions]);
+                
+                setCurrentFeature(feature);
+                setFeatureType(type);
+                setNameOptions(allNames);
+                setRegionOptions(allRegions);
+                setSelectedName(null);
+                setSelectedRegion(null);
+                setShowResult(false);
+            };
+
+            const handleSubmit = () => {
+                if (!selectedName || !selectedRegion) return;
+                
+                const nameCorrect = selectedName === currentFeature.name;
+                const regionCorrect = selectedRegion === currentFeature.region;
+                
+                let pointsEarned = 0;
+                if (nameCorrect) pointsEarned += 1;
+                if (regionCorrect) pointsEarned += 1;
+                
+                setScore(score + pointsEarned);
+                setShowResult(true);
+            };
+
+            const handleNext = () => {
+                if (currentRound >= 5) {
+                    setGameState('finished');
+                    const finalScore = score + (selectedName === currentFeature.name ? 1 : 0) + (selectedRegion === currentFeature.region ? 1 : 0);
+                    saveTopScore(finalScore);
+                } else {
+                    setCurrentRound(currentRound + 1);
+                    loadNewQuestion();
+                }
+            };
+
+            const handlePlayAgain = () => {
+                setGameState('playing');
+                setCurrentRound(1);
+                setScore(0);
+                loadNewQuestion();
+            };
+
+            if (!currentFeature && gameState === 'playing') return null;
+
+            if (gameState === 'finished') {
+                const finalScore = score;
+                const isTopScore = topScores.length < 5 || finalScore > topScores[topScores.length - 1]?.score;
+                
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-4">
+                        <div className="max-w-4xl mx-auto">
+                            <div className="bg-white rounded-lg shadow-lg p-8 text-center">
+                                <div className="text-6xl mb-4">🏆</div>
+                                <h1 className="text-4xl font-bold text-gray-800 mb-2">Game Complete!</h1>
+                                <div className="text-6xl font-bold text-green-600 my-6">{finalScore} / 10</div>
+                                <p className="text-xl text-gray-600 mb-8">
+                                    {finalScore === 10 ? "Perfect score! 🎉" : 
+                                     finalScore >= 8 ? "Excellent work! 🌟" :
+                                     finalScore >= 6 ? "Good job! 👍" :
+                                     finalScore >= 4 ? "Not bad! Keep practicing! 💪" :
+                                     "Keep trying! You'll improve! 🌱"}
+                                </p>
+
+                                {isTopScore && (
+                                    <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-4 mb-6">
+                                        <p className="text-lg font-semibold text-yellow-800">🎊 New Top Score!</p>
+                                    </div>
+                                )}
+
+                                {topScores.length > 0 && (
+                                    <div className="mb-8">
+                                        <h2 className="text-2xl font-bold text-gray-800 mb-4">Top 5 Scores</h2>
+                                        <div className="bg-gray-50 rounded-lg p-4">
+                                            {topScores.map((entry, idx) => (
+                                                <div key={idx} className="flex justify-between items-center py-2 border-b border-gray-200 last:border-0">
+                                                    <span className="font-semibold text-gray-700">#{idx + 1}</span>
+                                                    <span className="text-lg font-bold text-green-600">{entry.score} / 10</span>
+                                                    <span className="text-sm text-gray-500">{entry.date}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                <button
+                                    onClick={handlePlayAgain}
+                                    className="px-8 py-3 rounded-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all"
+                                >
+                                    Play Again
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            const nameCorrect = selectedName === currentFeature.name;
+            const regionCorrect = selectedRegion === currentFeature.region;
+
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-4">
+                    <div className="max-w-4xl mx-auto">
+                        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+                            <div className="flex items-center justify-between">
+                                <h1 className="text-3xl font-bold text-gray-800">Worldly</h1>
+                                <div className="text-right">
+                                    <div className="text-sm text-gray-600 mb-1">Round {currentRound} of 5</div>
+                                    <div className="text-2xl font-bold text-green-600">{score} points</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-white rounded-lg shadow-lg p-8">
+                            <div className="mb-8">
+                                <h2 className="text-xl font-semibold text-gray-700 mb-4">
+                                    Identify this geographic feature:
+                                </h2>
+                                <div className="bg-gray-100 rounded-lg border-2 border-gray-300 overflow-hidden">
+                                    <img 
+                                        src={currentFeature.imageUrl} 
+                                        alt="Geographic feature" 
+                                        className="w-full h-auto max-h-96 object-contain"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="mb-8">
+                                <h3 className="text-lg font-semibold text-gray-700 mb-3">What is its name?</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    {nameOptions.map((name, idx) => (
+                                        <button
+                                            key={idx}
+                                            onClick={() => !showResult && setSelectedName(name)}
+                                            disabled={showResult}
+                                            className={`p-4 rounded-lg border-2 text-left transition-all ${
+                                                selectedName === name
+                                                    ? showResult
+                                                        ? nameCorrect && name === currentFeature.name
+                                                            ? 'border-green-500 bg-green-50'
+                                                            : name === currentFeature.name
+                                                            ? 'border-green-500 bg-green-50'
+                                                            : 'border-red-500 bg-red-50'
+                                                        : 'border-blue-500 bg-blue-50'
+                                                    : showResult && name === currentFeature.name
+                                                    ? 'border-green-500 bg-green-50'
+                                                    : 'border-gray-300 hover:border-gray-400 bg-white'
+                                            } ${showResult ? 'cursor-default' : 'cursor-pointer'}`}
+                                        >
+                                            <div className="flex items-center justify-between">
+                                                <span className="font-medium">{name}</span>
+                                                {showResult && name === currentFeature.name && <span className="text-green-600">✓</span>}
+                                                {showResult && selectedName === name && name !== currentFeature.name && <span className="text-red-600">✗</span>}
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="mb-8">
+                                <h3 className="text-lg font-semibold text-gray-700 mb-3">What region is it in?</h3>
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                    {regionOptions.map((region, idx) => (
+                                        <button
+                                            key={idx}
+                                            onClick={() => !showResult && setSelectedRegion(region)}
+                                            disabled={showResult}
+                                            className={`p-4 rounded-lg border-2 text-center transition-all ${
+                                                selectedRegion === region
+                                                    ? showResult
+                                                        ? regionCorrect && region === currentFeature.region
+                                                            ? 'border-green-500 bg-green-50'
+                                                            : region === currentFeature.region
+                                                            ? 'border-green-500 bg-green-50'
+                                                            : 'border-red-500 bg-red-50'
+                                                        : 'border-blue-500 bg-blue-50'
+                                                    : showResult && region === currentFeature.region
+                                                    ? 'border-green-500 bg-green-50'
+                                                    : 'border-gray-300 hover:border-gray-400 bg-white'
+                                            } ${showResult ? 'cursor-default' : 'cursor-pointer'}`}
+                                        >
+                                            <div className="flex flex-col items-center gap-1">
+                                                <span className="font-medium">{region}</span>
+                                                {showResult && region === currentFeature.region && <span className="text-green-600">✓</span>}
+                                                {showResult && selectedRegion === region && region !== currentFeature.region && <span className="text-red-600">✗</span>}
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="flex justify-center">
+                                {!showResult ? (
+                                    <button
+                                        onClick={handleSubmit}
+                                        disabled={!selectedName || !selectedRegion}
+                                        className={`px-8 py-3 rounded-lg font-semibold text-white transition-all ${
+                                            selectedName && selectedRegion
+                                                ? 'bg-blue-600 hover:bg-blue-700'
+                                                : 'bg-gray-400 cursor-not-allowed'
+                                        }`}
+                                    >
+                                        Submit Answer
+                                    </button>
+                                ) : (
+                                    <div className="text-center">
+                                        <div className="mb-4">
+                                            <p className="text-2xl font-bold mb-2">
+                                                {nameCorrect && regionCorrect ? '🎉 Perfect!' : 
+                                                 nameCorrect || regionCorrect ? '👍 Partial Credit!' : '❌ Try Again!'}
+                                            </p>
+                                            <p className="text-gray-600">
+                                                You earned {(nameCorrect ? 1 : 0) + (regionCorrect ? 1 : 0)} out of 2 points
+                                            </p>
+                                        </div>
+                                        <button
+                                            onClick={handleNext}
+                                            className="px-8 py-3 rounded-lg font-semibold text-white bg-green-600 hover:bg-green-700 transition-all"
+                                        >
+                                            {currentRound >= 5 ? 'See Results' : 'Next Question →'}
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        ReactDOM.render(<GeographyTrivia />, document.getElementById('root'));
+    </script>
+</body>
+</html>
