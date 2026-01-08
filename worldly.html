@@ -48,7 +48,7 @@
                 { name: "Lake Geneva", region: "Europe", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/1/1b/Lake_Geneva_by_Sentinel-2.jpg" },
                 { name: "Caspian Sea", region: "Asia", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/9/98/Caspian_Sea_from_orbit.jpg" },
                 { name: "Lake Tanganyika", region: "Africa", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/4/46/STS51G-034-0012_Lake_Tanganyika_June1985.jpg" },
-                { name: "Lake Superior", region: "North America", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/9/9d/Lake_Superior_North_Shore.jpg" },
+                { name: "Lake Superior", region: "North America", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/3/3d/Lake_Superior_at_Neys_Provincial_Park_Ontario.jpg" },
                 { name: "Lake Malawi", region: "Africa", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/0/05/Lake_Malawi_seen_from_orbit.jpg" },
                 { name: "Dead Sea", region: "Asia", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/6/6f/Dead_Sea_beach_00.JPG" }
             ],
@@ -59,7 +59,7 @@
                 { name: "Atacama Desert", region: "South America", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/6/64/Paisajes_cerca_de_Calama%2C_Chile%2C_2016-02-01%2C_DD_84_%28cropped%29.JPG" },
                 { name: "Mojave Desert", region: "North America", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/2/21/Joshua_Tree_NP_-_Joshua_Tree_2.jpg" },
                 { name: "Kalahari Desert", region: "Africa", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/1/1f/Kalahari_E02_00.jpg" },
-                { name: "Patagonian Desert", region: "South America", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/9/92/PatagoniaDinos.jpg" },
+                { name: "Patagonian Desert", region: "South America", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/2/2d/Cerros_Madre_e_Hija.jpg" },
                 { name: "Great Victoria Desert", region: "Oceania", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/0/01/Serpentine_Lakes.JPG" },
                 { name: "Sonoran Desert", region: "North America", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/8/89/Saguaro_National_Park_-_Flickr_-_Joe_Parks.jpg" },
                 { name: "Namib Desert", region: "Africa", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/2/22/Sossusvlei.jpg" }
@@ -114,7 +114,7 @@
             const [showResult, setShowResult] = useState(false);
             const [score, setScore] = useState(0);
             const [topScores, setTopScores] = useState([]);
-            const [usedFeatures, setUsedFeatures] = useState([]); // FIX #2: Track used features
+            const [usedFeatures, setUsedFeatures] = useState([]);
 
             useEffect(() => {
                 loadTopScores();
@@ -154,12 +154,10 @@
                 const type = types[Math.floor(Math.random() * types.length)];
                 const features = FEATURES[type];
                 
-                // FIX #2: Filter out already used features
                 const availableFeatures = features.filter(f => 
                     !usedFeatures.some(used => used.name === f.name)
                 );
                 
-                // If we've used all features (shouldn't happen in 5 rounds), reset
                 if (availableFeatures.length === 0) {
                     setUsedFeatures([]);
                     return loadNewQuestion();
@@ -167,15 +165,12 @@
                 
                 const feature = availableFeatures[Math.floor(Math.random() * availableFeatures.length)];
                 
-                // FIX #3: Get wrong options from the same category so regions align better
                 const otherFeatures = availableFeatures.filter(f => f.name !== feature.name);
                 const wrongNames = shuffleArray(otherFeatures).slice(0, 3);
                 
-                // Collect all regions from the selected features (correct + wrong names)
                 const selectedFeatureRegions = [feature, ...wrongNames].map(f => f.region);
                 const uniqueRegions = [...new Set(selectedFeatureRegions)];
                 
-                // If we need more regions to reach 4, add some that aren't already included
                 const additionalRegions = REGIONS.filter(r => !uniqueRegions.includes(r));
                 const neededRegions = 4 - uniqueRegions.length;
                 const regionsToAdd = shuffleArray(additionalRegions).slice(0, neededRegions);
@@ -191,7 +186,6 @@
                 setSelectedRegion(null);
                 setShowResult(false);
                 
-                // FIX #2: Track this feature as used
                 setUsedFeatures(prev => [...prev, feature]);
             };
 
@@ -212,7 +206,6 @@
             const handleNext = () => {
                 if (currentRound >= 5) {
                     setGameState('finished');
-                    // FIX #1: Use current score state, don't recalculate
                     saveTopScore(score);
                 } else {
                     setCurrentRound(currentRound + 1);
@@ -224,14 +217,13 @@
                 setGameState('playing');
                 setCurrentRound(1);
                 setScore(0);
-                setUsedFeatures([]); // FIX #2: Reset used features
+                setUsedFeatures([]);
                 loadNewQuestion();
             };
 
             if (!currentFeature && gameState === 'playing') return null;
 
             if (gameState === 'finished') {
-                // FIX #1: Use the score state directly
                 const finalScore = score;
                 const isTopScore = topScores.length < 5 || finalScore > topScores[topScores.length - 1]?.score;
                 
@@ -347,7 +339,6 @@
 
                             <div className="mb-8">
                                 <h3 className="text-lg font-semibold text-gray-700 mb-3">What region is it in?</h3>
-                                {/* FIX #4: Force 2x2 grid on all screen sizes */}
                                 <div className="grid grid-cols-2 gap-3">
                                     {regionOptions.map((region, idx) => (
                                         <button
